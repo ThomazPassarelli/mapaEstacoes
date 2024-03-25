@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Stops Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map').setView([-22.9068, -43.1729], 13); // Centered on Rio de Janeiro
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        async function fetchStops() {
+            const url = 'https://api.mobilidade.rio/gtfs/stops/';
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.results;
+        }
+
+        function addMarkers(stops) {
+            stops.forEach(stop => {
+                const popupContent = `
+                    <strong>${stop.stop_name}</strong><br>
+                    Lat: ${stop.stop_lat}<br>
+                    Lon: ${stop.stop_lon}<br>
+                    <a href="http://onbus-eta.centralonbus.com.br/?stop_id=${stop.stop_id}" target="_blank">Stop ID: ${stop.stop_id}</a>
+                `;
+                const marker = L.marker([stop.stop_lat, stop.stop_lon]).addTo(map);
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        fetchStops().then(addMarkers);
+    </script>
+</body>
+</html>
